@@ -1,10 +1,10 @@
 {
-  "prefix": "YOUR_BOT_PREFIX_HERE",
-  "token": "YOUR_BOT_TOKEN_HERE",
-  "permissions": "YOUR_BOT_PERMISSIONS_HERE",
-  "application_id": "YOUR_APPLICATION_ID_HERE",
-  "owners": [
-    123456789,
-    987654321
-  ]
+  "prefix": "~",
+  "token": "OTIxNzA3MDgzMTY5MTY5NDQw.GloiBn.tVOUywRFX-iLa4GrxyQKlqEMqkx7bDFgMky5x8",
+  "permissions": "8",
+  "application_id": "921707083169169440",
+  "welcome_channel": "724098984100908544",
+  "bye_channel": "724098984100908544",
+  "prune_cache_length": 5,
+  "owners": [123456789, 987654321]
 }

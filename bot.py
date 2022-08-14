@@ -13,12 +13,13 @@ import random
 import sys
 
 import disnake
-from disnake import ApplicationCommandInteraction
-from disnake.ext import tasks, commands
+from disnake import ApplicationCommandInteraction, message
+from disnake.ext import commands, tasks
 from disnake.ext.commands import Bot
 from disnake.ext.commands import Context
 
 import exceptions
+from helpers import cache
 
 if not os.path.isfile("config.json"):
     sys.exit("'config.json' not found! Please add it and try again.")
@@ -67,9 +68,9 @@ It is recommended to use slash commands and therefore not use prefix commands.
 
 If you want to use prefix commands, make sure to also enable the intent below in the Discord developer portal.
 """
-# intents.message_content = True
+intents.message_content = True
 
-bot = Bot(command_prefix=commands.when_mentioned_or(config["prefix"]), intents=intents, help_command=None)
+bot = Bot(command_prefix=commands.when_mentioned_or(config["prefix"]), intents=intents)
 
 """
 Create a bot variable to access the config file in cogs so that you don't need to import it every time.
@@ -92,6 +93,18 @@ async def on_ready() -> None:
     print(f"Running on: {platform.system()} {platform.release()} ({os.name})")
     print("-------------------")
     status_task.start()
+    autoprune.start()
+
+
+@tasks.loop(hours=72)
+async def autoprune() -> None:
+    """
+    Loop prune
+    """
+    for each in cache.prune_channel:
+        prune_channel = bot.get_channel(each)
+        await prune_channel.purge(limit=1000000)
+        await prune_channel.send(f"messages pruned")
 
 
 @tasks.loop(minutes=1.0)
@@ -118,7 +131,7 @@ def load_commands(command_type: str) -> None:
 if __name__ == "__main__":
     """
     This will automatically load slash commands and normal commands located in their respective folder.
-    
+
     If you want to remove slash commands, which is not recommended due to the Message Intent being a privileged intent, you can remove the loading of slash commands below.
     """
     load_commands("slash")
@@ -131,9 +144,38 @@ async def on_message(message: disnake.Message) -> None:
     The code in this event is executed every time someone sends a message, with or without the prefix
     :param message: The message that was sent.
     """
+
     if message.author == bot.user or message.author.bot:
         return
+
+    if message.content.startswith(config["prefix"]):
+        # cut out prefix
+        message.content = message.content[1:]
+
+    if message.content.endswith(config['prefix']):
+        message.content = message.content[-1] + message.content[:-1]
+
     await bot.process_commands(message)
+
+
+@bot.event
+async def on_member_join(member: disnake.member):
+    welcome_channel = bot.get_channel(config["welcome_channel"])
+    welcome_channel.send("Welcome to the server, {}!".format(member.mention))
+
+
+@bot.event
+async def on_member_leave(member: disnake.member):
+    bye_channel = bot.get_channel(config["welcome_channel"])
+    bye_channel.send("Byeee, {}!".format(member.mention))
+
+
+@bot.event
+async def on_message_delete(message: disnake.message):
+    cache.prune_cache.append(message)
+    # set max length
+    if len(cache.prune_cache) > config['prune_cache_length']:
+        cache.prune_cache.pop(0)
 
 
 @bot.event
@@ -145,9 +187,10 @@ async def on_slash_command(interaction: ApplicationCommandInteraction) -> None:
 
     if interaction.guild is not None:
         print(
-        f"Executed {interaction.data.name} slash command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.author} (ID: {interaction.author.id})")
+            f"Executed {interaction.data.name} slash command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.author} (ID: {interaction.author.id})")
     else:
-        print(f"Executed {interaction.data.name} slash command by {interaction.author} (ID: {interaction.author.id}) in DMs")
+        print(
+            f"Executed {interaction.data.name} slash command by {interaction.author} (ID: {interaction.author.id}) in DMs")
 
 
 @bot.event
@@ -223,7 +266,8 @@ async def on_command_completion(context: Context) -> None:
         print(
             f"Executed {executed_command} command in {context.guild.name} (ID: {context.guild.id}) by {context.author} (ID: {context.author.id})")
     else:
-        print(f"Executed {executed_command} command by {context.author} (ID: {context.author.id}) in DMs")
+        print(
+            f"Executed {executed_command} command by {context.author} (ID: {context.author.id}) in DMs")
 
 
 @bot.event
