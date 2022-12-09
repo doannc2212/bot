@@ -11,6 +11,7 @@ from typing import Callable
 import json
 import os
 import sys
+import csv
 
 from disnake import File, Role
 from disnake.ext import commands
@@ -111,41 +112,51 @@ class Hope(commands.Cog, name="spacing"):
         """
         content = context.message.content[1:]
         lst = content.split(" ")
-        members = u''
-        to_string: Callable[[Role], str] = lambda role : '\n'.join(f"{member.name}#{member.discriminator},{member.id}" for member in role.members)
+        members = []
+        to_list: Callable[[Role], list] = lambda role : [[f'{member.name}#{member.discriminator}', f"'{member.id}"] for member in role.members]
+        appendMember: Callable[[list], None] = lambda lst : [members.append(member) for member in lst if not member in members]
         if content == 'inrole':
             await context.channel.send("Hello world!")
             return
         if 'lh' in lst:
             role = context.guild.get_role(387517990427426816)
-            if not role is None: members += to_string(role)
+            if not role is None: appendMember(to_list(role))
         if 'eh' in lst:
             role = context.guild.get_role(503537635508355083)
-            if not role is None: members += to_string(role)
+            if not role is None: 
+                for member in to_list(role) : members.append(member)
         if 'ah' in lst:
             role = context.guild.get_role(819625842681315328)
-            if not role is None: members += to_string(role)
+            if not role is None: 
+                for member in to_list(role) : members.append(member)
         if 'hh' in lst:
             role = context.guild.get_role(478857442562801666)
-            if not role is None: members += to_string(role)
+            if not role is None: 
+                for member in to_list(role) : members.append(member)
         if 'wh' in lst:
             role = context.guild.get_role(585144949520072720)
-            if not role is None: members += to_string(role)
+            if not role is None: 
+                for member in to_list(role) : members.append(member)
         if 'guest' in lst:
             role = context.guild.get_role(729922674289147935)
-            if not role is None: members += to_string(role)
+            if not role is None: 
+                for member in to_list(role) : members.append(member)
         if 'kibous' in lst:
             role = context.guild.get_role(405675971824320513)
-            if not role is None: members += to_string(role)
+            if not role is None: 
+                for member in to_list(role) : members.append(member)
         if 'slave' in lst:
             role = context.guild.get_role(745289897245671476)
-            if not role is None: members += to_string(role)
-        if members == '': 
+            if not role is None: appendMember(to_list(role))
+        if members == []: 
             await context.channel.send("No role found.")
         else:
+            header = ['Member', 'ID']
             filename='members.csv'
-            file = open(filename, "wb")
-            file.write(members.encode('utf-8'))
+            file = open(filename, "w", encoding='utf-16', newline='')
+            writer = csv.writer(file, delimiter='\t' )
+            writer.writerow(header)
+            writer.writerows(members)
             file.close()
             await context.channel.send(file=File(filename))
     # ----------------------------------------------------------------------------------------------
