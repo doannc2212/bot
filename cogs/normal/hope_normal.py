@@ -7,11 +7,12 @@ Version: 4.1.1
 """
 
 from datetime import datetime
+from typing import Callable
 import json
 import os
 import sys
 
-from disnake import File
+from disnake import File, Role
 from disnake.ext import commands
 from disnake.ext.commands import Context
 import pytz
@@ -41,8 +42,8 @@ class Hope(commands.Cog, name="spacing"):
             return
 
         value = context.message.content.split(" ")[1]
-        await context.channel.purge(limit=int(value))
-        await context.send(f"{value} messages deleted.")
+        await context.channel.purge(limit=int(value), check=lambda msg: not msg.pinned )
+        # await context.send(f"{value} messages deleted.")
 
     @commands.command(
         name="autoprune",
@@ -99,6 +100,57 @@ class Hope(commands.Cog, name="spacing"):
     # ----------------------------------------------------------------------------------------------
 
     @commands.command(
+        name="inrole",
+        description="This one gonna be awesome.",
+    )
+    @checks.not_blacklisted()
+    async def inrole_command(self, context: Context) -> None:
+        """
+        blabla
+        :param context: The context in which the command has been executed.
+        """
+        content = context.message.content[1:]
+        lst = content.split(" ")
+        members = u''
+        to_string: Callable[[Role], str] = lambda role : '\n'.join(f"{member.name}#{member.discriminator},{member.id}" for member in role.members)
+        if content == 'inrole':
+            await context.channel.send("Hello world!")
+            return
+        if 'lh' in lst:
+            role = context.guild.get_role(387517990427426816)
+            if not role is None: members += to_string(role)
+        if 'eh' in lst:
+            role = context.guild.get_role(503537635508355083)
+            if not role is None: members += to_string(role)
+        if 'ah' in lst:
+            role = context.guild.get_role(819625842681315328)
+            if not role is None: members += to_string(role)
+        if 'hh' in lst:
+            role = context.guild.get_role(478857442562801666)
+            if not role is None: members += to_string(role)
+        if 'wh' in lst:
+            role = context.guild.get_role(585144949520072720)
+            if not role is None: members += to_string(role)
+        if 'guest' in lst:
+            role = context.guild.get_role(729922674289147935)
+            if not role is None: members += to_string(role)
+        if 'kibous' in lst:
+            role = context.guild.get_role(405675971824320513)
+            if not role is None: members += to_string(role)
+        if 'slave' in lst:
+            role = context.guild.get_role(745289897245671476)
+            if not role is None: members += to_string(role)
+        if members == '': 
+            await context.channel.send("No role found.")
+        else:
+            filename='members.csv'
+            file = open(filename, "wb")
+            file.write(members.encode('utf-8'))
+            file.close()
+            await context.channel.send(file=File(filename))
+    # ----------------------------------------------------------------------------------------------
+
+    @commands.command(
         name="join",
         description="This one gonna be awesome.",
     )
@@ -113,7 +165,8 @@ class Hope(commands.Cog, name="spacing"):
         file = open("helpers/name_binding.json", "r")
         name_binding = json.load(file)
         text = name_binding[content] if content in name_binding else content
-        await context.send(file=File(assets_prefix + text + ".jpg"))
+        await context.send(file=File(assets_prefix + text + ".gif"))
+        await context.channel.send("Hello world!")
 
     # ----------------------------------------------------------------------------------------------
 
@@ -171,6 +224,7 @@ class Hope(commands.Cog, name="spacing"):
         content = context.message.content[1:]
         command = content.split(" ")[1]
         if command == "list":
+            await context.channel.send(file=File(assets_prefix + "armada list.png"))
             await context.channel.send("Some armada list text")
         else:
             await context.channel.send("Some armada text")

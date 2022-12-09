@@ -171,5 +171,5 @@ class Fun(commands.Cog, name="fun-slash"):
         await interaction.send("Please make your choice", view=view)
 
 
-def setup(bot):
-    bot.add_cog(Fun(bot))
+# def setup(bot):
+#     bot.add_cog(Fun(bot))

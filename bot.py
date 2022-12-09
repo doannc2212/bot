@@ -69,6 +69,8 @@ It is recommended to use slash commands and therefore not use prefix commands.
 If you want to use prefix commands, make sure to also enable the intent below in the Discord developer portal.
 """
 intents.message_content = True
+intents.members = True
+intents.guilds = True
 
 bot = Bot(command_prefix=commands.when_mentioned_or(config["prefix"]), intents=intents)
 
@@ -103,7 +105,7 @@ async def autoprune() -> None:
     """
     for each in cache.prune_channel:
         prune_channel = bot.get_channel(each)
-        await prune_channel.purge(limit=1000000)
+        await prune_channel.purge(limit=1000000, check=lambda msg: not msg.pinned)
         await prune_channel.send(f"messages pruned")
 
 
@@ -112,7 +114,7 @@ async def status_task() -> None:
     """
     Setup the game status task of the bot
     """
-    statuses = ["with you!", "with Krypton!", "with humans!"]
+    statuses = ["with you!", "with Nuna!", "with humans!"]
     await bot.change_presence(activity=disnake.Game(random.choice(statuses)))
 
 
